@@ -90,7 +90,7 @@ contract DemoScript is Script {
         vm.prank(employer);
         streamPay.adjustRate(streamId, RATE_2_PER_SEC);
 
-        (,, uint256 rate,,,,) = streamPay.streams(streamId);
+        (, , uint256 rate, , , , ) = streamPay.streams(streamId);
         console2.log("yeni oran(MON/dakika):", rate / 1e18);
     }
 
@@ -125,7 +125,7 @@ contract DemoScript is Script {
         vm.prank(recipient1);
         saleId = streamPay.listFutureClaim(streamId, duration, price);
 
-        (, uint256 start, uint256 end,,,) = streamPay.claimSales(saleId);
+        (, uint256 start, uint256 end, , , ) = streamPay.claimSales(saleId);
         console2.log("saleId             :", saleId);
         console2.log("pencere baslangic  :", start);
         console2.log("pencere bitis      :", end);
@@ -195,7 +195,7 @@ contract DemoScript is Script {
         console2.log("yeni zaman         :", block.timestamp);
 
         uint256 employerBefore = employer.balance;
-        (,,,, uint256 balanceBefore,,) = streamPay.streams(streamId);
+        (, , , , uint256 balanceBefore, , ) = streamPay.streams(streamId);
         console2.log("durdurmadan once kontrat bakiyesi(MON):", balanceBefore / 1e18);
 
         vm.prank(employer);
@@ -212,7 +212,7 @@ contract DemoScript is Script {
         streamPay.withdrawPending(streamId);
         console2.log("recipient1 rezervi cekti(MON):", (recipient1.balance - before) / 1e18);
 
-        (,,,, uint256 balanceAfter,, bool active) = streamPay.streams(streamId);
+        (, , , , uint256 balanceAfter, , bool active) = streamPay.streams(streamId);
         console2.log("son kontrat bakiyesi(MON):", balanceAfter / 1e18);
         console2.log("stream aktif mi:", active);
         _logBalances();

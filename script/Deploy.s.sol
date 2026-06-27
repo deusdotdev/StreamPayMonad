@@ -18,7 +18,11 @@ contract DeployScript is Script {
         console2.log("StreamPay deployed at:", address(streamPay));
 
         // deployments.json dosyasına kaydet.
-        string memory json = string.concat('{"StreamPay": "', vm.toString(address(streamPay)), '"}');
+        string memory json = string.concat(
+            '{"StreamPay": "',
+            vm.toString(address(streamPay)),
+            '"}'
+        );
         vm.writeFile("deployments.json", json);
         console2.log("Saved to deployments.json");
     }

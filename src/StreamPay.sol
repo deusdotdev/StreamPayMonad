@@ -74,7 +74,12 @@ contract StreamPay {
         uint256 endTime,
         uint256 price
     );
-    event FutureClaimSold(uint256 indexed saleId, uint256 indexed streamId, address indexed buyer, uint256 price);
+    event FutureClaimSold(
+        uint256 indexed saleId,
+        uint256 indexed streamId,
+        address indexed buyer,
+        uint256 price
+    );
 
     /// @dev Fonksiyon yeniden girilemez (re-entrancy koruması).
     modifier nonReentrant() {
@@ -88,7 +93,11 @@ contract StreamPay {
     /// @param recipient Ödemeyi alacak adres.
     /// @param ratePerMinute Dakika başına akan tutar (wei).
     /// @return streamId Oluşturulan akışın kimliği.
-    function createStream(address recipient, uint256 ratePerMinute) external payable returns (uint256 streamId) {
+    function createStream(address recipient, uint256 ratePerMinute)
+        external
+        payable
+        returns (uint256 streamId)
+    {
         require(recipient != address(0), "ZERO_RECIPIENT");
         require(ratePerMinute > 0, "ZERO_RATE");
         require(msg.value > 0, "ZERO_DEPOSIT");
@@ -171,7 +180,7 @@ contract StreamPay {
         emit Claimed(streamId, payee, amount);
 
         // --- Interactions (her şeyin sonunda dış çağrı) ---
-        (bool ok,) = payable(payee).call{value: amount}("");
+        (bool ok, ) = payable(payee).call{value: amount}("");
         require(ok, "TRANSFER_FAILED");
     }
 
@@ -181,7 +190,11 @@ contract StreamPay {
         uint256 plusOne = _saleOfStreamPlusOne[streamId];
         if (plusOne != 0) {
             ClaimRightSale storage sale = claimSales[plusOne - 1];
-            if (sale.active && block.timestamp >= sale.startTime && block.timestamp <= sale.endTime) {
+            if (
+                sale.active &&
+                block.timestamp >= sale.startTime &&
+                block.timestamp <= sale.endTime
+            ) {
                 return sale.buyer;
             }
         }
@@ -212,7 +225,7 @@ contract StreamPay {
 
         // --- Interactions ---
         if (refund > 0) {
-            (bool ok,) = payable(s.employer).call{value: refund}("");
+            (bool ok, ) = payable(s.employer).call{value: refund}("");
             require(ok, "REFUND_FAILED");
         }
     }
@@ -247,7 +260,10 @@ contract StreamPay {
         // --- Checks ---
         require(s.active, "NOT_ACTIVE");
         require(msg.sender == s.recipient, "NOT_RECIPIENT");
-        require(block.timestamp >= s.lastTopUpTimestamp + EMERGENCY_DELAY, "NOT_STALE");
+        require(
+            block.timestamp >= s.lastTopUpTimestamp + EMERGENCY_DELAY,
+            "NOT_STALE"
+        );
 
         uint256 amount = s.employerBalance;
         require(amount > 0, "NOTHING_TO_WITHDRAW");
@@ -259,7 +275,7 @@ contract StreamPay {
         emit EmergencyWithdrawn(streamId, s.recipient, amount);
 
         // --- Interactions ---
-        (bool ok,) = payable(s.recipient).call{value: amount}("");
+        (bool ok, ) = payable(s.recipient).call{value: amount}("");
         require(ok, "TRANSFER_FAILED");
     }
 
@@ -278,7 +294,7 @@ contract StreamPay {
         emit Claimed(streamId, s.recipient, amount);
 
         // --- Interactions ---
-        (bool ok,) = payable(s.recipient).call{value: amount}("");
+        (bool ok, ) = payable(s.recipient).call{value: amount}("");
         require(ok, "TRANSFER_FAILED");
     }
 
@@ -322,7 +338,14 @@ contract StreamPay {
         });
         salePrice[saleId] = price;
 
-        emit FutureClaimListed(saleId, streamId, msg.sender, block.timestamp, block.timestamp + durationSeconds, price);
+        emit FutureClaimListed(
+            saleId,
+            streamId,
+            msg.sender,
+            block.timestamp,
+            block.timestamp + durationSeconds,
+            price
+        );
     }
 
     /// @notice İlanı satın alır: ilan fiyatını öder (asıl alacaklıya gider) ve
@@ -344,7 +367,7 @@ contract StreamPay {
         emit FutureClaimSold(saleId, sale.streamId, msg.sender, msg.value);
 
         // --- Interactions (anlık ödeme asıl alacaklıya gider) ---
-        (bool ok,) = payable(sale.originalRecipient).call{value: msg.value}("");
+        (bool ok, ) = payable(sale.originalRecipient).call{value: msg.value}("");
         require(ok, "PAYMENT_FAILED");
     }
 }

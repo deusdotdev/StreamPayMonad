@@ -79,7 +79,7 @@ contract StreamPayTest is Test {
 
         assertEq(recipient.balance - before, expected, "recipient dogru tutari almali");
 
-        (,,, uint256 sLastClaim, uint256 sBalance,, bool sActive) = streamPay.streams(id);
+        (, , , uint256 sLastClaim, uint256 sBalance, , bool sActive) = streamPay.streams(id);
         assertEq(sBalance, deposit - expected, "bakiye dusulmis olmali");
         assertEq(sLastClaim, block.timestamp, "lastClaim guncellenmeli");
         assertTrue(sActive, "bakiye var, akis hala aktif");
@@ -120,7 +120,7 @@ contract StreamPayTest is Test {
         vm.prank(recipient);
         streamPay.claim(id);
 
-        (,,,, uint256 sBalance,, bool sActive) = streamPay.streams(id);
+        (, , , , uint256 sBalance, , bool sActive) = streamPay.streams(id);
         assertEq(sBalance, 0, "bakiye 0 olmali");
         assertFalse(sActive, "akis otomatik pasiflesmeli");
         // Pasif akista yeni claim revert etmeli.
@@ -161,7 +161,7 @@ contract StreamPayTest is Test {
         streamPay.pauseStream(id);
 
         // Akis pasif, bakiye 0, hak edis pendingClaim'e rezerve edilmis olmali.
-        (,,,, uint256 sBalance,, bool sActive) = streamPay.streams(id);
+        (, , , , uint256 sBalance, , bool sActive) = streamPay.streams(id);
         assertFalse(sActive, "akis durdurulmus olmali");
         assertEq(sBalance, 0, "employerBalance sifirlanmali");
         assertEq(streamPay.pendingClaim(id), accrued, "hak edis rezerve edilmeli");
@@ -196,7 +196,7 @@ contract StreamPayTest is Test {
 
         // Eski birikim donduruldu (pendingClaim), oran guncellendi.
         assertEq(streamPay.pendingClaim(id), oldAccrued, "eski birikim korunmali");
-        (,, uint256 sRate,,,,) = streamPay.streams(id);
+        (, , uint256 sRate, , , , ) = streamPay.streams(id);
         assertEq(sRate, newRate, "oran guncellenmis olmali");
         // Degisim aninda yeni birikim henuz 0.
         assertEq(streamPay.claimableAmount(id), 0, "degisimden hemen sonra yeni birikim 0");
@@ -248,7 +248,7 @@ contract StreamPayTest is Test {
         assertEq(recipient.balance - before, deposit, "alici tum bakiyeyi almali");
         assertEq(address(streamPay).balance, 0, "kontratta fon kalmamali");
 
-        (,,,, uint256 sBalance,, bool sActive) = streamPay.streams(id);
+        (, , , , uint256 sBalance, , bool sActive) = streamPay.streams(id);
         assertEq(sBalance, 0, "bakiye 0 olmali");
         assertFalse(sActive, "akis pasiflesmeli");
     }
@@ -268,8 +268,14 @@ contract StreamPayTest is Test {
         assertEq(streamPay.nextSaleId(), 1, "sale sayaci artmali");
         assertEq(streamPay.salePrice(saleId), price, "fiyat kaydedilmeli");
 
-        (uint256 sStreamId, uint256 sStart, uint256 sEnd, address sOriginal, address sBuyer, bool sActive) =
-            streamPay.claimSales(saleId);
+        (
+            uint256 sStreamId,
+            uint256 sStart,
+            uint256 sEnd,
+            address sOriginal,
+            address sBuyer,
+            bool sActive
+        ) = streamPay.claimSales(saleId);
         assertEq(sStreamId, id, "streamId");
         assertEq(sStart, t0, "startTime ilan ani");
         assertEq(sEnd, t0 + duration, "endTime = baslangic + sure");
@@ -283,7 +289,7 @@ contract StreamPayTest is Test {
         streamPay.buyFutureClaim{value: price}(saleId);
 
         assertEq(recipient.balance - recipientBefore, price, "fiyat recipient'a gitmeli");
-        (,,,, address sBuyer2, bool sActive2) = streamPay.claimSales(saleId);
+        (, , , , address sBuyer2, bool sActive2) = streamPay.claimSales(saleId);
         assertEq(sBuyer2, buyer, "buyer kaydedilmeli");
         assertTrue(sActive2, "satis aktif olmali");
     }
